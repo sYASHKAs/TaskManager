@@ -1,12 +1,30 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
+
+var db *gorm.DB
+
+func initDB() {
+	dsn := "host=localhost user=postgres password=postgres dbname=postgres port=5432 sslmode=disable"
+	var err error
+
+	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Fatalf("Could not connect to database: %v", err)
+	}
+	if err := db.AutoMigrate(&Task{}); err != nil {
+		log.Fatalf("Could not migrate: %v", err)
+	}
+}
 
 type Task struct {
 	ID     string `json:"id"`
@@ -19,9 +37,11 @@ type TaskRequest struct {
 	Status bool   `json:"status"`
 }
 
-var tasks = []Task{}
-
 func getTask(c echo.Context) error {
+	var tasks []Task
+	if err := db.Find(&tasks).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Could not get task"})
+	}
 	return c.JSON(http.StatusOK, tasks)
 }
 
@@ -37,7 +57,9 @@ func postTask(c echo.Context) error {
 		Status: req.Status,
 	}
 
-	tasks = append(tasks, task)
+	if err := db.Create(&task).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Could not get task"})
+	}
 	return c.JSON(http.StatusCreated, task)
 }
 
@@ -49,29 +71,31 @@ func patchTask(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request"})
 	}
 
-	for i, task := range tasks {
-		if task.ID == id {
-			tasks[i].Name = req.Name
-			tasks[i].Status = req.Status
-			return c.JSON(http.StatusOK, tasks[i])
-		}
+	var task Task
+	if err := db.First(&task, "id = ?", id).Error; err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Could not found name"})
 	}
-	return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request"})
+
+	task.Name = req.Name
+	task.Status = req.Status
+
+	if err := db.Save(&task).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Could not update task"})
+	}
+	return c.JSON(http.StatusOK, task)
 }
 
 func deleteTask(c echo.Context) error {
 	id := c.Param("id")
 
-	for i, task := range tasks {
-		if task.ID == id {
-			tasks = append(tasks[:i], tasks[i+1:]...)
-			return c.NoContent(http.StatusNoContent)
-		}
+	if err := db.Delete(&Task{}, "id = ?", id).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Could not delete task"})
 	}
-	return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request"})
+	return c.NoContent(http.StatusNoContent)
 }
 
 func main() {
+	initDB()
 
 	e := echo.New()
 
