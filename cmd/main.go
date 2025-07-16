@@ -4,6 +4,7 @@ import (
 	"TestProjecct/internal/db"
 	"TestProjecct/internal/handlers"
 	"TestProjecct/internal/taskService"
+	"TestProjecct/internal/web/tasks"
 	"log"
 
 	"github.com/labstack/echo/v4"
@@ -25,10 +26,13 @@ func main() {
 	e.Use(middleware.CORS())
 	e.Use(middleware.Logger())
 
-	e.GET("/tasks", taskHandlers.GetTask)
-	e.POST("/tasks", taskHandlers.PostTask)
-	e.PATCH("/tasks/:id", taskHandlers.PatchTask)
-	e.DELETE("/tasks/:id", taskHandlers.DeleteTask)
+	strictHandler := tasks.NewStrictHandler(taskHandlers, nil) // тут будет ошибка
+	tasks.RegisterHandlers(e, strictHandler)
+
+	// e.GET("/tasks", taskHandlers.GetTask)
+	// e.POST("/tasks", taskHandlers.PostTask)
+	// e.PATCH("/tasks/:id", taskHandlers.PatchTask)
+	// e.DELETE("/tasks/:id", taskHandlers.DeleteTask)
 
 	e.Start("localhost:8080")
 }
