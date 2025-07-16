@@ -81,6 +81,12 @@ paths:
       responses:
         '200':
           description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
     post:
       tags:
         - users
@@ -136,6 +142,26 @@ paths:
       responses:
         '204':
           description: The delete successfully
+  /users/{id}/tasks:
+    get:
+      summary: Get task for a user
+      tags:
+        - tasks
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A list of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
 
 components:
   schemas:
@@ -148,6 +174,8 @@ components:
           type: string
         status:
           type: boolean
+        user_id:
+          type: string
 
     User:
       type: object

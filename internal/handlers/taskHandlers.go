@@ -27,6 +27,7 @@ func (h *TaskHandler) GetTasks(ctx context.Context, request tasks.GetTasksReques
 			Id:     &tsk.ID,
 			Name:   &tsk.Name,
 			Status: &tsk.Status,
+			UserId: &tsk.UserId,
 		}
 		response = append(response, task)
 	}
@@ -41,6 +42,7 @@ func (h *TaskHandler) PostTasks(ctx context.Context, request tasks.PostTasksRequ
 	taskToCreate := taskService.TaskRequest{
 		Name:   *taskRequest.Name,
 		Status: *taskRequest.Status,
+		UserId: *taskRequest.UserId,
 	}
 	createdTask, err := h.service.CreateTask(taskToCreate)
 
@@ -52,6 +54,7 @@ func (h *TaskHandler) PostTasks(ctx context.Context, request tasks.PostTasksRequ
 		Id:     &createdTask.ID,
 		Name:   &createdTask.Name,
 		Status: &createdTask.Status,
+		UserId: &createdTask.UserId,
 	}
 	// Просто возвращаем респонс!
 	return response, nil
@@ -65,6 +68,7 @@ func (h *TaskHandler) PatchTasksId(ctx context.Context, request tasks.PatchTasks
 	taskToUpdate := taskService.TaskRequest{
 		Name:   *taskRequest.Name,
 		Status: *taskRequest.Status,
+		UserId: *taskRequest.UserId,
 	}
 	updatedTask, err := h.service.UpdateTask(taskID, taskToUpdate)
 	if err != nil {
@@ -75,6 +79,7 @@ func (h *TaskHandler) PatchTasksId(ctx context.Context, request tasks.PatchTasks
 		Id:     &updatedTask.ID,
 		Name:   &updatedTask.Name,
 		Status: &updatedTask.Status,
+		UserId: &updatedTask.UserId,
 	}
 	return response, nil
 }
@@ -89,47 +94,25 @@ func (h *TaskHandler) DeleteTasksId(ctx context.Context, request tasks.DeleteTas
 	return tasks.DeleteTasksId204Response{}, nil
 }
 
-// func (h *TaskHandler) GetTask(c echo.Context) error {
-// 	tasks, err := h.service.GetAllTasks()
-// 	if err != nil {
-// 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Could not get task"})
-// 	}
-// 	return c.JSON(http.StatusOK, tasks)
-// }
+// GetUsersIdTasks implements tasks.StrictServerInterface.
+func (h *TaskHandler) GetUsersIdTasks(ctx context.Context, request tasks.GetUsersIdTasksRequestObject) (tasks.GetUsersIdTasksResponseObject, error) {
+	userId := request.Id
 
-// func (h *TaskHandler) PostTask(c echo.Context) error {
-// 	var req taskService.TaskRequest
-// 	if err := c.Bind(&req); err != nil {
-// 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request"})
-// 	}
+	taskUser, err := h.service.GetTasksForUser(userId)
+	if err != nil {
+		return nil, err
+	}
+	response := tasks.GetUsersIdTasks200JSONResponse{}
 
-// 	task, err := h.service.CreateTask(req)
-// 	if err != nil {
-// 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Could not get task"})
-// 	}
-// 	return c.JSON(http.StatusCreated, task)
-// }
+	for _, tsk := range taskUser {
+		task := tasks.Task{
+			Id:     &tsk.ID,
+			Name:   &tsk.Name,
+			Status: &tsk.Status,
+			UserId: &tsk.UserId,
+		}
+		response = append(response, task)
+	}
 
-// func (h *TaskHandler) PatchTask(c echo.Context) error {
-// 	id := c.Param("id")
-
-// 	var req taskService.TaskRequest
-// 	if err := c.Bind(&req); err != nil {
-// 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request"})
-// 	}
-
-// 	updatedTask, err := h.service.UpdateTask(id, req)
-// 	if err != nil {
-// 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Could not update task"})
-// 	}
-// 	return c.JSON(http.StatusOK, updatedTask)
-// }
-
-// func (h *TaskHandler) DeleteTask(c echo.Context) error {
-// 	id := c.Param("id")
-
-// 	if err := h.service.DeleteTask(id); err != nil {
-// 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Could not delete task"})
-// 	}
-// 	return c.NoContent(http.StatusNoContent)
-// }
+	return response, nil
+}

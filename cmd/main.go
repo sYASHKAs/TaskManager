@@ -4,7 +4,7 @@ import (
 	"TestProjecct/internal/db"
 	"TestProjecct/internal/handlers"
 	"TestProjecct/internal/taskService"
-	"TestProjecct/internal/userService"
+	userservice "TestProjecct/internal/userService"
 	"TestProjecct/internal/web/tasks"
 	"TestProjecct/internal/web/users"
 	"log"
@@ -24,8 +24,8 @@ func main() {
 	taskRepo := taskService.NewTaskRepository(database)
 	taskService := taskService.NewTaskService(taskRepo)
 	taskHandlers := handlers.NewTaskHandler(taskService)
-	userRepo := userService.NewUserRepository(database)
-	userService := userService.NewUserService(userRepo)
+	userRepo := userservice.NewUserRepository(database)
+	userService := userservice.NewUserService(userRepo)
 	userHandlers := handlers.NewUserHandler(userService)
 
 	e.Use(middleware.CORS())

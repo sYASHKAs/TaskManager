@@ -1,6 +1,8 @@
-package userService
+package userservice
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 type UserRepository interface {
 	CreateUser(user User) error

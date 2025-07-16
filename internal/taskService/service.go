@@ -8,6 +8,7 @@ type TaskService interface {
 	GetTaskByID(id string) (Task, error)
 	UpdateTask(id string, req TaskRequest) (Task, error)
 	DeleteTask(id string) error
+	GetTasksForUser(userID string) ([]Task, error)
 }
 
 type taskService struct {
@@ -23,6 +24,7 @@ func (s *taskService) CreateTask(req TaskRequest) (Task, error) {
 		ID:     uuid.NewString(),
 		Name:   req.Name,
 		Status: req.Status,
+		UserId: req.UserId,
 	}
 	if err := s.repo.CreateTask(task); err != nil {
 		return Task{}, err
@@ -46,6 +48,7 @@ func (s *taskService) UpdateTask(id string, req TaskRequest) (Task, error) {
 
 	task.Name = req.Name
 	task.Status = req.Status
+	task.UserId = req.UserId
 
 	if err := s.repo.UpdateTask(task); err != nil {
 		return Task{}, err
@@ -55,4 +58,8 @@ func (s *taskService) UpdateTask(id string, req TaskRequest) (Task, error) {
 
 func (s *taskService) DeleteTask(id string) error {
 	return s.repo.DeleteTask(id)
+}
+
+func (s *taskService) GetTasksForUser(userID string) ([]Task, error) {
+	return s.repo.GetTasksForUser(userID)
 }

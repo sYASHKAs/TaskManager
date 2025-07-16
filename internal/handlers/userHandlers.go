@@ -1,16 +1,16 @@
 package handlers
 
 import (
-	"TestProjecct/internal/userService"
+	userservice "TestProjecct/internal/userService"
 	"TestProjecct/internal/web/users"
 	"context"
 )
 
 type UserHandler struct {
-	service userService.UserService
+	service userservice.UserService
 }
 
-func NewUserHandler(s userService.UserService) *UserHandler {
+func NewUserHandler(s userservice.UserService) *UserHandler {
 	return &UserHandler{service: s}
 }
 
@@ -36,7 +36,7 @@ func (h *UserHandler) GetUsers(ctx context.Context, request users.GetUsersReques
 // Postuser implements user.StrictServerInterface.
 func (h *UserHandler) PostUsers(ctx context.Context, request users.PostUsersRequestObject) (users.PostUsersResponseObject, error) {
 	userRequest := request.Body
-	userToCreate := userService.UserRequest{
+	userToCreate := userservice.UserRequest{
 		Email:    *userRequest.Email,
 		Password: *userRequest.Password,
 	}
@@ -59,7 +59,7 @@ func (h *UserHandler) PatchUsersId(ctx context.Context, request users.PatchUsers
 	userID := request.Id
 	userRequest := request.Body
 
-	userToUpdate := userService.UserRequest{
+	userToUpdate := userservice.UserRequest{
 		Email:    *userRequest.Email,
 		Password: *userRequest.Password,
 	}
@@ -82,5 +82,5 @@ func (h *UserHandler) DeleteUsersId(ctx context.Context, request users.DeleteUse
 	if err := h.service.DeleteUser(userId); err != nil {
 		return nil, err
 	}
-	return users.DeleteUsersId204JSONResponse{}, nil
+	return users.DeleteUsersId204Response{}, nil
 }
