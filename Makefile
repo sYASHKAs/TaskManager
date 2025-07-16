@@ -16,6 +16,9 @@ migrate:
 migrate-down:
 	$(MIGRATE) down
 
+lint:
+	golangci-lint run --color=always
+
 gen:
 	oapi-codegen -config openapi/.openapi -include-tags tasks -package tasks openapi/openapi.yaml > ./internal/web/tasks/api.gen.go
 	

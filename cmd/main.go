@@ -26,7 +26,7 @@ func main() {
 	e.Use(middleware.CORS())
 	e.Use(middleware.Logger())
 
-	strictHandler := tasks.NewStrictHandler(taskHandlers, nil) // тут будет ошибка
+	strictHandler := tasks.NewStrictHandler(taskHandlers, nil)
 	tasks.RegisterHandlers(e, strictHandler)
 
 	// e.GET("/tasks", taskHandlers.GetTask)
@@ -34,5 +34,7 @@ func main() {
 	// e.PATCH("/tasks/:id", taskHandlers.PatchTask)
 	// e.DELETE("/tasks/:id", taskHandlers.DeleteTask)
 
-	e.Start("localhost:8080")
+	if err := e.Start("localhost:8080"); err != nil {
+		log.Fatal(err)
+	}
 }
