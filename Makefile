@@ -19,7 +19,10 @@ migrate-down:
 lint:
 	golangci-lint run --color=always
 
-gen:
+gen-users:
+	oapi-codegen -config openapi/.openapi -include-tags users -package users openapi/openapi.yaml > ./internal/web/users/users.gen.go
+
+gen-tasks:
 	oapi-codegen -config openapi/.openapi -include-tags tasks -package tasks openapi/openapi.yaml > ./internal/web/tasks/api.gen.go
 	
 # для удобства добавим команду run, которая будет запускать наше приложение

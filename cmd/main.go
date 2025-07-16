@@ -4,7 +4,9 @@ import (
 	"TestProjecct/internal/db"
 	"TestProjecct/internal/handlers"
 	"TestProjecct/internal/taskService"
+	"TestProjecct/internal/userService"
 	"TestProjecct/internal/web/tasks"
+	"TestProjecct/internal/web/users"
 	"log"
 
 	"github.com/labstack/echo/v4"
@@ -22,17 +24,18 @@ func main() {
 	taskRepo := taskService.NewTaskRepository(database)
 	taskService := taskService.NewTaskService(taskRepo)
 	taskHandlers := handlers.NewTaskHandler(taskService)
+	userRepo := userService.NewUserRepository(database)
+	userService := userService.NewUserService(userRepo)
+	userHandlers := handlers.NewUserHandler(userService)
 
 	e.Use(middleware.CORS())
 	e.Use(middleware.Logger())
 
-	strictHandler := tasks.NewStrictHandler(taskHandlers, nil)
-	tasks.RegisterHandlers(e, strictHandler)
+	strictTaskHandler := tasks.NewStrictHandler(taskHandlers, nil)
+	tasks.RegisterHandlers(e, strictTaskHandler)
 
-	// e.GET("/tasks", taskHandlers.GetTask)
-	// e.POST("/tasks", taskHandlers.PostTask)
-	// e.PATCH("/tasks/:id", taskHandlers.PatchTask)
-	// e.DELETE("/tasks/:id", taskHandlers.DeleteTask)
+	strictUserHandler := users.NewStrictHandler(userHandlers, nil)
+	users.RegisterHandlers(e, strictUserHandler)
 
 	if err := e.Start("localhost:8080"); err != nil {
 		log.Fatal(err)
